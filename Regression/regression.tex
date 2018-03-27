@@ -1,0 +1,327 @@
+\documentclass{ctexart}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{listings}
+
+\title {回归}
+\author {YangXiao}
+
+\begin{document}
+\maketitle
+\section{引理：向量的导数}
+    $\bm A$为$m\times n$的矩阵，$\bm x$为 $n\times 1$的列向量,\\
+    记$\vec{y} = \bm A\cdot\vec{x}$ \\
+    思考： $\frac{\partial \vec{y}}{\partial \vec{x}} = ?$ \\
+    \textbf{向量导数的推导} \\
+    令 \\
+    $$
+    \bm A=
+    \left[
+    \begin{matrix}
+      a_{11} & a_{12} & \cdots & a_{1n} \\
+      a_{21} & a_{22} & \cdots & a_{2n} \\
+      \vdots & \vdots & \ddots & \vdots \\
+      a_{m1} & a_{m2} & \cdots & a_{mn}
+    \end{matrix}
+    \right]
+    $$
+
+    $$
+    \vec{x}=
+    \left[
+    \begin{matrix}
+      x_1 \\
+      x_2 \\
+      \vdots \\
+      x_n
+    \end{matrix}
+    \right]
+    $$
+
+    $$
+    \bm A\cdot\vec{x}=
+    \left[
+    \begin{matrix}
+      a_{11}x_1+a_{12}x_2\cdots +a_{1n}x_n \\
+      a_{21}x_2+a_{22}x_2\cdots +a_{2n}x_n \\
+      \vdots \\
+      a_{n1}x_1+a_n{2x}_2\cdots +a_{nn}x_n
+    \end{matrix}
+    \right]
+    $$
+    \text{从而，}
+    $$
+    \frac{\partial \vec{y}}{\partial \vec{x}} = \frac{\partial {\bm A\cdot\vec{x}}}{\partial \vec{x}}=
+    \left[
+    \begin{matrix}
+      a_{11} & a_{21} & \cdots & a_{m1} \\
+      a_{12} & a_{22} & \cdots & a_{m2} \\
+      \vdots & \vdots & \ddots & \vdots \\
+      a_{1n} & a_{2n} & \cdots & a_{mn}
+    \end{matrix}
+    \right]
+    =\bm A^T
+    $$
+    %公式推导
+    \textbf{结论与直接推广} \\
+    向量偏导公式： \\
+    $\frac{\partial \bm A\cdot\vec{x}}{\partial \vec{x}} = \bm A^T $ \\
+    $\frac{\partial \bm A\cdot\vec{x}}{\partial \vec{x}^T} = \bm A $ \\
+    $\frac{\partial (\vec{x}^T\cdot \bm A)}{\partial \vec{x}} = \bm A $ \\
+    %标量对向量求导
+    \textbf{引理：标量对向量求导} \\
+    $\bm A$为$n\times n$的矩阵，$\bm x$为 $n\times 1$的列向量,\\
+    记$y = \vec{x}^T\cdot\bm A\cdot\vec{x}$ \\
+    同理可得： \\
+    $\frac{\partial y}{\partial \vec{x}} = \frac{\vec{x}^T\cdot\bm A\cdot\vec{x}}{\partial \vec{x}} = (\bm A + \bm A^T)\cdot\vec{x}$ \\
+    若$\bm A 对称阵，则有 \frac{\vec{x}^T\cdot\bm A \cdot\vec{x}}{\partial \vec{x}} = 2\bm A\vec{x}$ \\
+    \section{线性回归}
+    $y=ax+b $ --单变量  \\
+    $h_\theta(x) = \theta_0+\theta_1x_1+\theta_2x_2 $--双变量 \\
+    \begin{equation}
+      h_\theta(x) = \sum_{i=0}^{n}\theta_ix_i=\theta^T\bm x
+    \end{equation}
+    \textbf{使用极大似然估计解释最小二乘} \\
+    \begin{equation}\
+      y^{(i)}=\theta^Tx^{(i)}+\epsilon^{(i)}
+    \end{equation}
+    误差$\epsilon^{(i)}(1\leq i \leq m)$是独立同分布的，服从均值为0，方差为某定值的$\sigma^2$的\emph{高斯分布}\\
+    原因：中心极限定理 。众多因素的独立影响的综合反应，往往近似服从正态分布。\\
+    \textbf{似然函数} \\
+    \begin{equation}
+       p(\epsilon^{(i)}) = \frac{1}{\sqrt{2\pi}{\sigma}}\exp\left(-\frac{(\epsilon^{(i)})^2}{2\sigma^2}\right)
+    \end{equation}
+    \begin{equation}\label{eq:conditionGussian}
+      p(y^{(i)}|x^{(i)};\theta) = \frac{1}{\sqrt{2\pi}{\sigma}}\exp\left(-\frac{(y^{(i)}-\theta^Tx^{(i)})^2}{2\sigma^2}\right)
+    \end{equation}
+
+    \begin{align}\label{eq:likehood_function}
+      \mathcal L(\theta) &= \prod_{i=1}^{m}p(y^{(i)}|x^{(i)};\theta)\\
+      &=\prod_{i=1}^{m}\frac{1}{\sqrt{2\pi}{\sigma}}\exp\left(-\frac{(y^{(i)}-\theta^Tx^{(i)})^2}{2\sigma^2}\right)
+    \end{align}
+    在得到似然函数后，使似然函数值最大，即假定给定x和$ \theta $后，使得y出现的可能性最大,事实上$\theta $未知，\ref{eq:conditionGussian} 表示在i那个点处给定x和$\theta ，y^{(i)}$出现的概率，所以连乘所有的点就可以得到所有概率，然后求最大。 我们可以对似然函数L求导，使其等于0，得到极值点。 \\
+    为社么在求导等于0 可以保证似然函数值最大？ \\
+    因为，指数族函数都是凹函数，凹函数极值点便是最值点。且为最大值点，我们平时看到的各种分布：高斯分布，泊松分布等可以写成指数族函数形式。下面即开始研究\ref{eq:likehood_function} 高斯对数与最小二乘的关系： \\
+    \begin{align}\label{eq:log_likehood}
+      \mathcal L(\theta) & = \log L(\theta) \\
+      & = \log \prod_{i=1}^{m}\frac{1}{\sqrt{2\pi}\sigma}exp\left ( -\frac{(y^{(i)}-\theta^Tx^{(i)})}{\sigma^2}\right )\\
+      & = \sum_{i=1}^{m}\log \frac{1}{\sqrt{2\pi}\sigma}exp\left ( -\frac{(y^{(i)}-\theta^Tx^{(i)})}{\sigma^2}\right ) \\
+      & = m\log \frac{1}{\sqrt{2\pi}\sigma}-\frac{1}{\sigma^2}\cdot\frac{1}{2}\sum_{i=1}^{m}(y^{(i)}-\theta^Tx^{(i)})^2
+    \end{align}
+    去掉无关常数项，所以目标函数变换为：\\
+    \begin{equation}\label{eq:goal_function}
+      \mathcal{J(\theta)} = \frac{1}{2}\sum_{i=1}^{m}(h_(\theta))(x^{(i)})-y^{(i)})^2
+    \end{equation}
+    假设$\bm X$为m行，n列的矩阵。m表示有m个样本，n表示每个样本有多少个参数（特征）。\\
+    目标函数\ref{eq:goal_function} 转变为如下：
+    \begin{equation}\label{eq:new_goal_function}
+      \mathcal{J(\bm\theta)} =\frac{1}{2}(\bm X\bm\theta - \bm y)^T(\bm X\bm\theta - \bm y)
+    \end{equation}
+    对上式\ref{eq:new_goal_function} 求导等于0，过程如下：
+    \begin{align}
+    \label{qiudao_newgoal}
+      \nabla_{\bm\theta} \mathcal J(\bm\theta) & = \nabla_{\bm\theta} \left ( \frac{1}{2}(\bm\theta^T\bm X^T - \bm y^T)(\bm\theta\bm X -\bm y) \right ) \\
+     & = \nabla_{\bm\theta}\left (\frac{1}{2}\bm\theta^T\bm X^T\bm X\theta-\theta^T\bm X^T\bm y - \bm y^T\bm X\theta +\bm y^T\bm y \right ) \\
+     & = \frac{1}{2}\left (2\bm X^T\bm X\bm\theta-\bm X^T\bm y -(\bm y^T\bm X)^T\right ) \\
+     & = \bm X^T\bm X\bm\theta - \bm X^T\bm y
+    \end{align}
+    令上式等于0，可得$\bm\theta$解析式：
+    \begin{equation}\label{eq:jiexijie}
+      \bm\theta = (\bm X^T\bm X)^{-1}\bm X^T\bm y
+    \end{equation}
+    若$\bm X^T\bm X$不可逆，则需要加入$\lambda $扰动，即正则，如下：
+    \begin{equation}
+      \bm\theta = (\bm X^T\bm X + \lambda\bm I)^{-1}\bm X^T\bm y
+    \end{equation}
+    \textbf{梯度下降算法最小化目标函数}
+    \begin{itemize}
+      \item 初始化$\bm\theta$(随机初始化）
+      \item 迭代，新的$\theta$能够使得$\bm J(\bm\theta)$更小
+      \item 如果$\bm J(\bm\theta)$能继续减少，继续迭代
+      \item $\bm\theta_j = \bm\theta_j-\alpha \frac{\partial \bm J(\bm\theta)}{\partial\bm\theta_j}$
+      \item 其中，$\alpha$称为学习率/步长
+    \end{itemize}
+    \begin{align}\label{gredient}
+      \alpha \frac{\partial \bm J(\bm\theta)}{\partial\theta_j} & = \alpha \frac{\partial }{\partial\bm\theta_j}\frac{1}{2}\left (h_\theta(x)-y \right )^2\\
+       & = 2\cdot\frac{1}{2}\left (h_\theta(x)-y \right )\cdot\frac{\partial}{\partial\theta_j} \left (h_\theta(x)-y \right )\\
+       & = \left (h_\theta(x)-y \right )\cdot\frac{\partial}{\partial\theta_j}(\sum_{i=0}^{n}\theta_ix_i-y) \\
+       & = \left (h_\theta(x)-y \right )\bm x_j
+    \end{align}
+    其中$\bm x_j$表示某一个向量的第j维，是标量 \\
+    \textbf{批处理梯度下降算法}
+    \begin{equation}\label{bath_gradient}
+      \theta_j = \theta_j-\alpha\sum_{i=0}^{m}(h_\theta(x^{i})- y^{(i)})x_{j}^{(i)}
+    \end{equation}
+    其中$x_{j}^{(i)}$表示第i个向量的第j维，没更新一个$\theta$需要遍历所有的样本，当样本很大时，显然需要的操作太多，下面介绍随机梯度下降 \\
+    \textbf{随机梯度下降——SGD}\\
+     Loop \\
+      for i=1 to m:
+    \begin{equation}\label{SGD}
+             \theta_j = \theta_j-\alpha(h_\theta(x^{i})- y^{(i)})x_{j}^{(i)}
+    \end{equation}
+    \section{logistic回归}
+    \textbf{logistic分布} \\
+    设X是连续随机变量，若X满足logistic分布，则X具有下列分布函数： \\
+    \begin{equation}\label{logistic_distribution}
+      F(x)=P(X\leq x)=\frac{1}{1+exp^{-(x-\mu)/\gamma}}
+    \end{equation}
+    其中$\mu$为位置参数，$\gamma>0$为形状参数 \\
+    \textbf{logistic函数}
+    \begin{equation}\label{eq:logistic_function}
+      g(z)=\frac{1}{1+exp^{-z}}\\
+      h_\theta(\bm x)=g(\bm\theta^T\bm x)=\frac{1}{1+exp^{-\bm\theta^T\bm x}}
+    \end{equation}
+    对g(z)求导得：\\
+    \begin{equation}
+      g^{'}(z)=g(z)\left (1-g(z)\right )
+    \end{equation}
+    假定：\\
+    \begin{equation}
+      P(y=1\ |\ \bm x;\bm\theta)=h_{\bm\theta} (\bm x)
+    \end{equation}
+    \begin{equation}
+      P(y=0\ |\ \bm x;\bm\theta)=1-h_{\bm\theta} (\bm x)
+    \end{equation}
+    给定$\bm x $和 $\theta $分布律为：
+    \begin{equation}
+      p(\bm y\ |\ \bm x;\bm\theta)=\left (h_{\bm\theta} (\bm x)\right )^y\left (1-h_{\bm\theta} (\bm x)\right )^{1-y}
+    \end{equation}
+    似然函数：\\
+    \begin{align}\label{like_log}
+      \mathcal L & =p(\vec{y}|\bm X;\bm\theta) \\
+       & = \prod_{i=1}^{m}p(y^{(i)}|x^{(i)};\bm\theta) \\
+       & = \prod_{i=1}^{m}p\left (h_\theta(x^{(i)})\right )^{y^{(i)}}\left (1-h_\theta(x^{(i)})\right )^{1-y^{(i)}}
+    \end{align}
+    对数似然函数：\\
+    \begin{align}\label{log_log}
+      \mathcal L & = \log L(\bm \theta)
+       & = \sum_{i=1}^{m}y^{(i)}\log h\left (x^{(i)}\right )+\left (1-y^{(i)}\right )\log\left (1-h(x^{(i)})\right )
+    \end{align}
+    \begin{align}
+      \frac{\partial\mathcal L(\bm\theta)}{\partial\theta_j} & =\left (y\frac{1}{g(\bm\theta^T\bm X)} +(1-y)\frac{-1}{1-g(\bm\theta^T\bm X)}\right )\frac{\partial g(\bm\theta^T\bm X)}{\partial\theta_j} \\
+      & =\left (y\frac{1}{g(\bm\theta^T\bm X)} +(1-y)\frac{-1}{1-g(\bm\theta^T\bm X)}\right )g(\bm\theta^T\bm X)(1-g(\bm\theta^T\bm X))\frac{\partial\theta^T\bm X}{\partial\bm\theta_j}\\
+      & =\left (y(1-g(\bm\theta^T\bm X))+(1-y)g(\bm\theta^T\bm X)\right )x_j \\
+      & =(y-(\bm\theta^T\bm X))x_j \\
+      & =(y-h_\theta(\bm X))x_j
+    \end{align}
+    logistic回归参数学习规则：\\
+     \textbf{批处理梯度下降算法}
+    \begin{equation}\label{bath_gradient_log}
+      \theta_j = \theta_j-\alpha\sum_{i=0}^{m}(y^{(i)}-h_\theta(x^{i}) )x_{j}^{(i)}
+    \end{equation}
+    其中$x_{j}^{(i)}$表示第i个向量的第j维，没更新一个$\theta$需要遍历所有的样本，当样本很大时，显然需要的操作太多，下面介绍随机梯度下降 \\
+    \textbf{随机梯度下降——SGD}\\
+     Loop \\
+      for i=1 to m:
+    \begin{equation}\label{SGD_log}
+             \theta_j = \theta_j-\alpha( y^{(i)}-h_\theta(x^{i}))x_{j}^{(i)}
+    \end{equation}
+    对比\ref{bath_gradient},\ref{bath_gradient_log}和\ref{SGD},\ref{SGD_log}。可知线性回归和logistic回归有相同形式。 \\
+    \textbf{对数线性模型} \\
+    一个事件的几率odds，是指该事件发生的概率与该事件不发生的概率的比值。\\
+    \emph{对数几率}：logit函数 \\
+    $P(y=1\ |\ \bm x;\bm\theta)=h_\theta(\bm x) $\\
+    $P(y=0\ |\ \bm x;\bm\theta)=1-h_\theta(x) $\\
+    \begin{align}
+      logit(p) & =\log\frac{p}{1-p} \\
+       & =\log\frac{h_\theta(x)}{1-h_\theta(x)}  \\
+       & = \log \left (\frac{\frac{1}{1+exp^{(-w^Tx)}}}{\frac{exp^{(-w^Tx)}}{1+exp^{(-w^Tx)}}}\right ) \\
+       & =w^T\bm x
+    \end{align}
+    所以logistic回归模型是，对输入$\bm x$的数线性模型$w^T\bm x$，由\ref{eq:logistic_function}可知，当线性模型$w^T\bm x$越趋近无穷大，其概率值越接近1，越接近负无穷，其概率值越趋近0.
+    \section{实验——多项式曲线拟合}
+    \textbf{分别使用直接求解析解、加入正则求解析解和随机梯度下降求解}
+    \textbf{问题背景：} 在[0,1]的区间里，利用正弦函数加上均值为0，方差为0.2的噪声。sin(2*$\pi$x)+$\mathcal N(0, 0.2)$生成10个点。\\
+    \textbf{直接求解析解：} 代码如下： \\
+    \begin{lstlisting}
+    #定义多项式函数
+    def phi(self, x, m):
+        _phi = [1]
+        for i in range(m):
+            _phi.append(x**(i+1))
+        return _phi
+        def Phi(self, X, m):
+        _Phi = []
+        for x in X:
+            _Phi.append(self.phi(x, m))
+        return np.array(_Phi)
+    #y = w^T *x + w_0
+    def predict(self, omgea, x):
+        return omgea.dot(self.phi(x, len(omgea) - 1))
+    #画预测函数
+    def plot_predict(self, func, range, label = '',\\resolution = 0.02,color = "red"):
+        _x = np.arange(range[0], range[1], resolution)
+        _y = [func(x) for x in _x]
+        plt.plot(_x, _y, label = label, color = color)
+    #分别在2，3，5，9维下进行多项式拟合
+    def run(self, X, t):
+        dimesion = [2, 3, 5, 9]
+        range = [0 ,1]
+        for idx, dim in enumerate(dimesion):
+            _Phi = self.Phi(X, dim)
+            #无正则，求解析解
+            omega = inv(_Phi.T.dot(_Phi)).dot(_Phi.T).dot(t)
+            #正则，求解析解
+            lamda = 1e-3
+            omega_re = inv(lamda*np.eye(dim + 1, dim + 1) +\\
+            _Phi.T.dot(_Phi)).dot(_Phi.T).dot(t)
+            #无正则预测
+            _predict = partial(self.predict, omega)
+            #加入正则预测
+            _predict_re = partial(self.predict, omega_re)
+
+            ax = plt.subplot(2, 2, idx +1)
+            #w无正则画图
+            self.plot_predict(_predict, range, label = 'no regularizaition',\\
+             resolution = 0.015,color='red')
+            #正则画图
+            self.plot_predict(_predict_re, range, label='regularzaition',\\
+             resolution = 0.015, color = 'green')
+            plt.scatter(X, t, c = '', marker='o',edgecolors='blue')
+            plt.title('Dim = %d'%dim)
+            plt.legend()
+        plt.show()
+    \end{lstlisting}
+    \textbf{随机梯度下降：}\\
+    \begin{lstlisting}
+    #随机梯度下降
+    def sgd(self, X, t, omega, lr = 1e-2):
+        for i in range(len(X)):
+            for j in range(1,len(omega)):
+                omega[j] = omega[j] - lr*(self.predict \\
+                (omega, X[i]) - t[i])*(X[i]**j)
+        return omega
+    #训练
+    def train(self,X, t, dim, lr = 1e-2 ,epch = 20000):
+        omega = np.zeros(dim)
+        for i in range(epch):
+            omega = self.sgd(X, t, omega)
+        return omega
+    #分别在2，3，5，9维训练
+    def run_sgd(self,X ,t):
+        demsion = [2, 3, 5, 9]
+        range = [0, 1]
+        for idx, dim in enumerate(demsion):
+            omega = self.train(X, t, dim)
+
+            _predict_sgd = partial(self.predict, omega)
+
+            ax = plt.subplot(2, 2, idx + 1)
+            # 随机梯度下降画图
+            self.plot_predict(_predict_sgd, range, label='gradient_sgd',\ \\ 
+            resolution=0.015, color='red')
+            plt.title('dim %d'%dim)
+            plt.scatter(X, t, c ='',marker='o' ,edgecolors='blue')
+        plt.show()
+    \end{lstlisting}
+    
+    \section{最大熵模型}
+
+\end{document} 
